@@ -1,8 +1,5 @@
 /****************************************************************************
- Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
- 
- http://www.cocos2d-x.org
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
@@ -22,13 +19,11 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "HelloWorldScene.h"
+#include "SceneStart.h"
 
-USING_NS_CC;
-
-Scene* HelloWorld::createScene()
+cocos2d::Scene* SceneStart::createScene()
 {
-    return HelloWorld::create();
+    return SceneStart::create(); // "static create()"
 }
 
 // Print useful error message instead of segfaulting when files are not there.
@@ -39,44 +34,47 @@ static void problemLoading(const char* filename)
 }
 
 // on "init" you need to initialize your instance
-bool HelloWorld::init()
+bool SceneStart::init()
 {
     //////////////////////////////
-    // 1. super init first
-    if ( !Scene::init() )
+    // 1. static super init first
+    if ( !cocos2d::Scene::init() )
     {
         return false;
     }
 
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    auto visibleSize = cocos2d::Director::getInstance()->getVisibleSize();
+    cocos2d::Vec2 origin = cocos2d::Director::getInstance()->getVisibleOrigin();
 
     /////////////////////////////
     // 2. add a menu item with "X" image, which is clicked to quit the program
     //    you may modify it.
 
     // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+    const std::string imageQuitNormal( "quit_normal.png" );
+    const std::string imageQuitSelected( "quit_selected.png" );
 
-    if (closeItem == nullptr ||
-        closeItem->getContentSize().width <= 0 ||
-        closeItem->getContentSize().height <= 0)
+    auto itemClose = cocos2d::MenuItemImage::create(
+        imageQuitNormal,
+        imageQuitSelected,
+        CC_CALLBACK_1(SceneStart::menuCloseCallback, this));
+
+    if (itemClose == nullptr ||
+        itemClose->getContentSize().width <= 0 ||
+        itemClose->getContentSize().height <= 0)
     {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
+        problemLoading((imageQuitNormal + imageQuitSelected).c_str());
     }
     else
     {
-        float x = origin.x + visibleSize.width - closeItem->getContentSize().width/2;
-        float y = origin.y + closeItem->getContentSize().height/2;
-        closeItem->setPosition(Vec2(x,y));
+        float x = origin.x + visibleSize.width - itemClose->getContentSize().width/2;
+        float y = origin.y + itemClose->getContentSize().height/2;
+        itemClose->setPosition(cocos2d::Vec2(x,y));
     }
 
     // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
+    auto menu = cocos2d::Menu::create(itemClose, NULL);
+    menu->setPosition(cocos2d::Vec2::ZERO);
     this->addChild(menu, 1);
 
     /////////////////////////////
@@ -85,7 +83,7 @@ bool HelloWorld::init()
     // add a label shows "Hello World"
     // create and initialize a label
 
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
+    auto label = cocos2d::Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
     if (label == nullptr)
     {
         problemLoading("'fonts/Marker Felt.ttf'");
@@ -93,7 +91,7 @@ bool HelloWorld::init()
     else
     {
         // position the label on the center of the screen
-        label->setPosition(Vec2(origin.x + visibleSize.width/2,
+        label->setPosition(cocos2d::Vec2(origin.x + visibleSize.width/2,
                                 origin.y + visibleSize.height - label->getContentSize().height));
 
         // add the label as a child to this layer
@@ -101,7 +99,7 @@ bool HelloWorld::init()
     }
 
     // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
+    auto sprite = cocos2d::Sprite::create("HelloWorld.png");
     if (sprite == nullptr)
     {
         problemLoading("'HelloWorld.png'");
@@ -109,7 +107,7 @@ bool HelloWorld::init()
     else
     {
         // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+        sprite->setPosition(cocos2d::Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
 
         // add the sprite as a child to this layer
         this->addChild(sprite, 0);
@@ -118,15 +116,14 @@ bool HelloWorld::init()
 }
 
 
-void HelloWorld::menuCloseCallback(Ref* pSender)
+void SceneStart::menuCloseCallback(Ref* pSender)
 {
-    //Close the cocos2d-x game scene and quit the application
-    Director::getInstance()->end();
-
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
-
-    //EventCustom customEndEvent("game_scene_close_event");
-    //_eventDispatcher->dispatchEvent(&customEndEvent);
-
-
+    EventCustom customEndEvent("game_scene_close_event");
+    _eventDispatcher->dispatchEvent(&customEndEvent);
+#else
+    //Close the cocos2d-x game scene and quit the application
+    cocos2d::Director::getInstance()->end();
+#endif
 }
